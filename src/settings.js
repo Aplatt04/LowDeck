@@ -44,7 +44,7 @@ function load(userDataDir, legacy = {}) {
     spotify: { clientId: '', redirectUri: 'http://127.0.0.1:8888/callback', ...(legacy.spotify || {}), ...(saved?.spotify || {}) },
     discord: { clientId: '', clientSecret: '', ...(legacy.discord || {}), ...(saved?.discord || {}) },
     steam:   { steamId: legacy.steam?.steamId || '', ...(saved?.steam || {}) },
-    general: { display: { id: 'auto' }, alwaysOnTop: legacy.window?.alwaysOnTop ?? true, startWithWindows: false, ...(saved?.general || {}) },
+    general: { display: { id: 'auto' }, alwaysOnTop: legacy.window?.alwaysOnTop ?? true, startWithWindows: false, uiScale: 1, ...(saved?.general || {}) },
     apps:    (saved?.apps || DEFAULT_APPS).map(a => ({ id: a.id || uid(), ...a })),
     layout:  normaliseLayout(saved?.layout || DEFAULT_LAYOUT),
   };

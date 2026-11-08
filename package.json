@@ -1,7 +1,7 @@
 {
   "name": "lowdeck",
   "productName": "Lowdeck",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A touchscreen dashboard for a second screen: Spotify, Steam games, app shortcuts, Discord voice and system stats.",
   "main": "main.js",
   "author": "Andrew Platt",

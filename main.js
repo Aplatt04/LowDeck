@@ -9,11 +9,18 @@ const discord = require('./src/discord');
 const steam   = require('./src/steam');
 const settingsStore = require('./src/settings');
 
-const USER_DATA   = app.getPath('userData');            // %APPDATA%\lowdeck
+// ── Dev copy vs installed copy ────────────────────────────────────────────────
+// A working copy marked with an empty `.dev` file keeps its own settings in
+// %APPDATA%\lowdeck-dev, shows DEV in the title bar and can run alongside your
+// installed Lowdeck. Everything else (installed copy, GitHub clones) uses %APPDATA%\lowdeck.
+const IS_DEV = fs.existsSync(path.join(__dirname, '.dev'));
+if (IS_DEV) app.setPath('userData', path.join(app.getPath('appData'), 'lowdeck-dev'));
+
+const USER_DATA   = app.getPath('userData');
 const TOKENS_PATH = path.join(USER_DATA, 'tokens.json');
 
-// ── Log file (logs/lowdeck.log next to the app) ──────────────────────────────
-const LOG_PATH = path.join(__dirname, 'logs', 'lowdeck.log');
+// ── Log file (in the app's data folder, so it works wherever Lowdeck is installed)
+const LOG_PATH = path.join(USER_DATA, 'logs', 'lowdeck.log');
 try { fs.mkdirSync(path.dirname(LOG_PATH), { recursive: true }); } catch {}
 try { if (fs.statSync(LOG_PATH).size > 1_000_000) fs.renameSync(LOG_PATH, LOG_PATH + '.old'); } catch {}
 for (const level of ['log', 'warn', 'error']) {
@@ -25,21 +32,27 @@ for (const level of ['log', 'warn', 'error']) {
   };
 }
 
-// ── One-time move of data from before the app was renamed ─────────────────────
-// Keeps your settings, Spotify login and Discord login after the rename.
-(function migrateOldData() {
+// ── First run: start from existing settings and logins if there are any ───────
+// A dev copy starts from the installed copy's data; both also pick up data
+// from before the app was renamed. Nothing is copied once settings exist.
+(function seedData() {
   try {
     fs.mkdirSync(USER_DATA, { recursive: true });
-    const oldDir = path.join(app.getPath('appData'), 'digital-stream-deck');
-    if (fs.existsSync(path.join(USER_DATA, 'settings.json')) || !fs.existsSync(oldDir)) return;
-    for (const f of ['settings.json', 'tokens.json', 'spotify-history.json', 'steam-names.json']) {
-      const src = path.join(oldDir, f);
+    if (fs.existsSync(path.join(USER_DATA, 'settings.json'))) return;
+    const appData = app.getPath('appData');
+    const sources = [IS_DEV && path.join(appData, 'lowdeck'), path.join(appData, 'digital-stream-deck')].filter(Boolean);
+    const from = sources.find(d => fs.existsSync(path.join(d, 'settings.json')));
+    if (!from) return;
+    for (const f of ['settings.json', 'tokens.json', 'discord-token.json', 'spotify-history.json', 'steam-names.json']) {
+      const src = path.join(from, f);
       if (fs.existsSync(src)) fs.copyFileSync(src, path.join(USER_DATA, f));
     }
     const oldDiscord = path.join(__dirname, 'discord-token.json');
-    if (fs.existsSync(oldDiscord)) fs.copyFileSync(oldDiscord, path.join(USER_DATA, 'discord-token.json'));
-    console.log('[Lowdeck] Moved settings over from the previous app folder');
-  } catch (e) { console.error('[Lowdeck] Migration failed:', e.message); }
+    if (!fs.existsSync(path.join(USER_DATA, 'discord-token.json')) && fs.existsSync(oldDiscord)) {
+      fs.copyFileSync(oldDiscord, path.join(USER_DATA, 'discord-token.json'));
+    }
+    console.log(`[Lowdeck] Copied settings and logins from ${from}`);
+  } catch (e) { console.error('[Lowdeck] Copying settings failed:', e.message); }
 })();
 
 // Older installs kept keys in config.json — read it once if it's still there.
@@ -128,7 +141,7 @@ function createWindow() {
     y: target.bounds.y,
     width: target.bounds.width, height: target.bounds.height,
     alwaysOnTop: settings.general.alwaysOnTop,
-    title: 'Lowdeck',
+    title: IS_DEV ? 'Lowdeck (dev)' : 'Lowdeck',
     show: false,
     frame: false,
     resizable: true,
@@ -181,6 +194,9 @@ if (!gotLock) {
 }
 
 // ── IPC: Config ──────────────────────────────────────────────────────────────
+ipcMain.handle('app-info', () => ({ name: 'Lowdeck', version: app.getVersion(), dev: IS_DEV, dataFolder: USER_DATA, appFolder: __dirname }));
+ipcMain.handle('open-data-folder', () => shell.openPath(USER_DATA));
+
 // ── IPC: Screens ─────────────────────────────────────────────────────────────
 ipcMain.handle('get-displays', () => {
   const current = win && !win.isDestroyed() ? screen.getDisplayMatching(win.getBounds()).id : null;

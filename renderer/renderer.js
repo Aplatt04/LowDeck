@@ -10,12 +10,16 @@ let discordState  = {};
 let fadeTimer     = null;
 
 const FAVICON = domain => `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-let deckSettings = null;   // connections, apps and layout (see settings-ui.js)
+let deckSettings = null;
+let appInfo = { version: '', dev: false };   // connections, apps and layout (see settings-ui.js)
 
 /* ── Boot ───────────────────────────────────────────────────────────────────── */
 async function init() {
   deckSettings = await window.api.getSettings();
+  appInfo = await window.api.appInfo();
+  if (appInfo.dev) { document.getElementById('drag-grip').innerHTML = 'LOWDECK <span class="dev-badge">DEV</span>'; document.title = 'Lowdeck (dev)'; }
   applyLayout(deckSettings.layout);
+  initScaling();
   spotifyAuthed = await window.api.spotifyIsAuthed();
   updateAuthButton();
   if (spotifyAuthed) startSpotifyPoll();
@@ -50,6 +54,32 @@ function applyLayout(layout, { editing = false } = {}) {
   const visible = cols.filter(c => editing || c.querySelector('.widget'));
   cols.forEach(c => c.classList.toggle('hidden', !visible.includes(c)));
   document.getElementById('columns').style.gridTemplateColumns = `repeat(${visible.length || 1}, 1fr)`;
+  if (!editing && typeof updateScale === 'function') updateScale();
+}
+
+/* ── Scaling: fit the interface to any screen ─────────────────────────────── */
+// Lowdeck is designed at 720px tall with columns at least ~520px wide. We zoom
+// the whole page so it always has at least that much room: bigger screens get
+// everything larger, smaller ones get it smaller, and nothing gets squashed.
+// Settings → General → Size multiplies the result.
+const DESIGN_HEIGHT = 720, COLUMN_WIDTH = 520;
+let currentZoom = 1;
+function updateScale() {
+  // Window size before zoom (innerWidth/Height are already divided by the zoom)
+  const w = window.innerWidth * currentZoom, h = window.innerHeight * currentZoom;
+  const cols = Math.max(1, document.querySelectorAll('#columns > .col:not(.hidden)').length);
+  const auto = Math.min(h / DESIGN_HEIGHT, w / (cols * COLUMN_WIDTH));
+  const user = Number(deckSettings?.general?.uiScale) || 1;
+  const z = Math.max(0.4, Math.min(3, auto * user));
+  if (Math.abs(z - currentZoom) < 0.005) return;
+  currentZoom = z;
+  window.api.setZoom(z);
+}
+function initScaling() {
+  currentZoom = window.api.getZoom?.() || 1;   // Chromium can restore a zoom from last time
+  let t = null;
+  window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => { updateScale(); updateMarquee(); }, 100); });
+  updateScale();
 }
 
 /* ── Titlebar auto-hide ─────────────────────────────────────────────────────── */
@@ -431,14 +461,7 @@ function renderSpotifyWidget(data) {
 
   if (trackEl.textContent !== track.name) {
     trackEl.textContent = track.name;
-    trackEl.classList.remove('scrolling');
-    requestAnimationFrame(() => {
-      const wrap = trackEl.parentElement;
-      if (trackEl.scrollWidth > wrap.clientWidth + 4) {
-        trackEl.style.setProperty('--scroll-dist', (wrap.clientWidth - trackEl.scrollWidth) + 'px');
-        trackEl.classList.add('scrolling');
-      }
-    });
+    requestAnimationFrame(updateMarquee);
   }
 
   artistEl.textContent = track.artists.map(a => a.name).join(', ');
@@ -454,6 +477,17 @@ function renderSpotifyWidget(data) {
     artEl.src = imgUrl;
     artEl.onload = () => { artEl.classList.add('loaded'); extractAccent(artEl); };
     artEl.onerror = () => artEl.classList.remove('loaded');
+  }
+}
+
+// Long track names scroll; re-checked when the window or scale changes
+function updateMarquee() {
+  const trackEl = document.getElementById('spotify-track-text');
+  trackEl.classList.remove('scrolling');
+  const wrap = trackEl.parentElement;
+  if (trackEl.scrollWidth > wrap.clientWidth + 4) {
+    trackEl.style.setProperty('--scroll-dist', (wrap.clientWidth - trackEl.scrollWidth) + 'px');
+    trackEl.classList.add('scrolling');
   }
 }
 

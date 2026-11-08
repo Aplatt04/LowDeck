@@ -1,7 +1,9 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webFrame } = require('electron');
 
 contextBridge.exposeInMainWorld('api', {
   launch:             (t)       => ipcRenderer.invoke('launch', t),
+  setZoom:            (f)       => webFrame.setZoomFactor(f),
+  getZoom:            ()        => webFrame.getZoomFactor(),
   launchApp:          (a)       => ipcRenderer.invoke('launch-app', a),
 
   getSettings:        ()        => ipcRenderer.invoke('get-settings'),
@@ -9,6 +11,8 @@ contextBridge.exposeInMainWorld('api', {
   appRestart:         ()        => ipcRenderer.invoke('app-restart'),
   pickProgram:        ()        => ipcRenderer.invoke('pick-program'),
   getDisplays:        ()        => ipcRenderer.invoke('get-displays'),
+  appInfo:            ()        => ipcRenderer.invoke('app-info'),
+  openDataFolder:     ()        => ipcRenderer.invoke('open-data-folder'),
   identifyDisplays:   ()        => ipcRenderer.invoke('identify-displays'),
 
   windowMinimize:     ()        => ipcRenderer.invoke('window-minimize'),

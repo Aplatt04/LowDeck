@@ -24,7 +24,9 @@ Lowdeck is made of widgets that you arrange across up to three columns:
 - **Apps:** add, rename, reorder and remove shortcuts. Website icons are found automatically; programs use their own icon.
 - **Layout & widgets:** turn widgets on and off, or click **Edit layout** and drag widgets between columns with the mouse. Drop one on the Hidden tray to hide it. Empty columns collapse and the rest widen.
 
-Lowdeck fills the chosen screen. At sign-in it waits for that screen to come up, and it moves back there after sleep or if the screen is reconnected.
+Lowdeck fills the chosen screen and **scales to fit it**, whether that's a 7" panel, a 1920×720 bar or a full 1080p monitor. It also accounts for Windows display scaling. If it looks too big or small, change **Settings → General → Size**. At sign-in it waits for that screen to come up, and it moves back there after sleep or if the screen is reconnected.
+
+Small screens work best with fewer columns. Use **Layout & widgets** to hide widgets you don't need, and the remaining columns get the space.
 
 ## Requirements
 
@@ -60,6 +62,17 @@ Voice control uses Discord's RPC voice scopes, which Discord only grants to an a
 ### Steam
 Enter your **SteamID64** (17 digits starting `7656…`; it's shown in Steam under your account name → *Account details*). Games and cover art are read from Steam on your PC, so no API key is needed.
 
+## Installing for everyday use
+
+`npm start` runs Lowdeck from the folder you cloned. To install a copy you can leave running:
+
+1. Double-click **`install.bat`**. It copies Lowdeck to `%LOCALAPPDATA%\Programs\Lowdeck`, adds a **Lowdeck** Start menu shortcut and starts it.
+2. In that copy, turn on **Settings → General → Start with Windows**.
+
+Run `install.bat` again whenever you want to update the installed copy. Your settings are kept.
+
+**Working on Lowdeck while using it:** create an empty file called `.dev` in your working folder. That copy then keeps its own settings (in `%APPDATA%\lowdeck-dev`), shows **DEV** in the title bar and can run alongside your installed Lowdeck. On first run it starts with the installed copy's settings and logins.
+
 ## Where things are stored
 
 Nothing personal is kept in the project folder. Settings, API keys and logins live in `%APPDATA%\lowdeck\`:
@@ -71,7 +84,7 @@ Nothing personal is kept in the project folder. Settings, API keys and logins li
 | `discord-token.json` | Discord login |
 | `spotify-history.json`, `steam-names.json` | Caches |
 
-A log is written to `logs\lowdeck.log` in the project folder.
+A log is written to `%APPDATA%\lowdeck\logs\lowdeck.log`.
 
 ## Project layout
 

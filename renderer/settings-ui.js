@@ -36,6 +36,8 @@ function openSettings(tab = settingsTab) {
         <button class="nav-item" data-tab="layout">Layout &amp; widgets</button>
         <div class="spacer"></div>
         <button class="nav-item" id="settings-restart">↻ Restart Lowdeck</button>
+        <button class="nav-item" id="settings-data" title="Settings, logins and logs">Open data folder</button>
+        <div class="app-version">Lowdeck ${esc(appInfo.version)}${appInfo.dev ? ' · dev copy' : ''}</div>
       </nav>
       <div id="settings-main">
         <div id="settings-head"><h1 id="settings-title"></h1><button class="btn" id="settings-close">Close</button></div>
@@ -46,6 +48,7 @@ function openSettings(tab = settingsTab) {
   el.querySelectorAll('.nav-item[data-tab]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
   el.querySelector('#settings-close').addEventListener('click', closeSettings);
   el.querySelector('#settings-restart').addEventListener('click', () => window.api.appRestart());
+  el.querySelector('#settings-data').addEventListener('click', () => window.api.openDataFolder());
   el.addEventListener('mousedown', e => { if (e.target === el) closeSettings(); });
   showTab(tab);
 }
@@ -110,8 +113,20 @@ async function renderGeneral(body) {
     });
     return row;
   };
+  // Size: multiplies the automatic scaling
+  const SIZES = [0.7, 0.8, 0.9, 1, 1.1, 1.25, 1.5];
+  const cur = Number(g.uiScale) || 1;
+  const sizeRow = h(`<div class="w-row"><span class="w-name">Size</span><span class="w-desc">Lowdeck scales itself to your screen. Make everything a bit bigger or smaller here.</span>
+    <div class="seg">${SIZES.map(v => `<button class="seg-btn ${v === cur ? 'on' : ''}" data-v="${v}">${v === 1 ? 'Auto' : Math.round(v * 100) + '%'}</button>`).join('')}</div></div>`);
+  sizeRow.querySelectorAll('.seg-btn').forEach(b => b.addEventListener('click', async () => {
+    await saveSettings({ general: { uiScale: Number(b.dataset.v) } });
+    sizeRow.querySelectorAll('.seg-btn').forEach(x => x.classList.toggle('on', x === b));
+    updateScale();
+  }));
+
   const toggles = h(`<div class="w-list"></div>`);
   toggles.append(
+    sizeRow,
     toggle('startWithWindows', 'Start with Windows', 'Open Lowdeck automatically when you sign in'),
     toggle('alwaysOnTop', 'Always on top', 'Keep Lowdeck above other windows on its screen'),
   );

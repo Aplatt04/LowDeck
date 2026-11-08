@@ -50,7 +50,7 @@ button { background: none; border: none; cursor: pointer; color: inherit; font: 
 #spotify-art-wrap {
   position: relative; flex-shrink: 0; border-radius: 16px; overflow: hidden;
   /* Shrinks to fit when Now Playing shares its column with other widgets */
-  width: clamp(64px, calc(100cqh - 280px), 260px); height: clamp(64px, calc(100cqh - 280px), 260px);
+  width: clamp(64px, min(calc(100cqh - 280px), calc(100cqw - 72px)), 420px); height: clamp(64px, min(calc(100cqh - 280px), calc(100cqw - 72px)), 420px);
   background: var(--surface); box-shadow: 0 16px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04);
   flex-shrink: 0; transition: box-shadow 0.8s ease;
 }
@@ -413,3 +413,27 @@ body.editing .col:not(:has(.widget))::before { content: 'Drop widgets here'; mar
 .vol-row input[type=range] { -webkit-appearance: none; appearance: none; height: 10px; border-radius: 5px; background: var(--surface2); outline: none; }
 .vol-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: rgb(var(--accent)); border: 3px solid #0f0f0f; box-shadow: 0 0 0 1px rgba(var(--accent),0.5); cursor: pointer; }
 .discord-user.speaking .discord-avatar { box-shadow: 0 0 0 3px #3ba55d; }
+
+/* Dev badge + version */
+.dev-badge { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 4px; background: #f59e0b; color: #000; font-size: 9px; letter-spacing: 1px; }
+#drag-grip { pointer-events: none; }
+.app-version { font-size: 12px; color: var(--text-dim); padding: 10px 14px 0; }
+
+/* Size buttons */
+.seg { display: flex; background: #141414; border: 1px solid var(--border); border-radius: 9px; padding: 3px; gap: 2px; flex-shrink: 0; }
+.seg-btn { padding: 6px 10px; border-radius: 6px; font-size: 13px; color: var(--text-mid); font-weight: 600; }
+.seg-btn:hover { color: var(--text); background: var(--surface2); }
+.seg-btn.on { background: rgb(var(--accent)); color: #fff; }
+
+/* Narrow windows (one column, small or portrait screens) */
+@media (max-width: 1000px) {
+  #settings-panel { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  #settings-nav { flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--border-soft); padding: 10px; }
+  #settings-nav h2, #settings-nav .spacer, .app-version { display: none; }
+  .card-row { grid-template-columns: 1fr; }
+  .app-edit { grid-template-columns: 44px 1fr auto; }
+  .app-edit .type, .app-edit .target { grid-column: 2 / -1; }
+  .w-row { flex-wrap: wrap; }
+  .w-row .w-desc { flex-basis: 100%; order: 3; }
+  #edit-hint { display: none; }
+}
