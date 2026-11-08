@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Personal data — never commit
+config.json
+discord-token.json
+*.token.json
+.env
+
+# Local logs, backups and restore points
+logs/
+versions/
+*.bak-*
+*.bak.js
+
+# Editor folders
+.vscode/
+.idea/
+
+# Build output
+dist/
+out/
+
+# OS files
+Thumbs.db
+desktop.ini
+.DS_Store

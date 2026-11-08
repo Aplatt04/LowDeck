@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lowdeck</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Title bar ─────────────────────────────────────────────────────── -->
+  <div id="drag-bar">
+    <span id="drag-grip">LOWDECK</span>
+    <div id="titlebar-controls">
+      <button id="btn-settings" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button id="btn-minimize" title="Minimise">—</button>
+      <button id="btn-close"    title="Close">✕</button>
+    </div>
+  </div>
+
+  <!-- Edit-layout toolbar (replaces the title bar while editing) -->
+  <div id="edit-bar" class="hidden">
+    <span id="edit-hint">Editing layout — drag widgets with the mouse to move them. Drop one on the tray to hide it.</span>
+    <div id="edit-tray" title="Hidden widgets — drag back onto the deck"><span class="tray-label">Hidden</span><div id="edit-tray-items"></div></div>
+    <div id="edit-actions">
+      <button class="btn ghost" id="edit-reset">Reset</button>
+      <button class="btn ghost" id="edit-cancel">Cancel</button>
+      <button class="btn primary" id="edit-done">Done</button>
+    </div>
+  </div>
+
+  <!-- ── Columns — widgets are placed into these from your saved layout ── -->
+  <div id="columns">
+    <section class="col" data-col="0"></section>
+    <section class="col" data-col="1"></section>
+    <section class="col" data-col="2"></section>
+  </div>
+
+  <!-- ── Widgets (moved into the columns at start-up) ───────────────────── -->
+  <div id="widget-store" hidden>
+
+    <div class="widget" data-widget="nowplaying" data-name="Now Playing" id="col-spotify">
+      <div class="col-header">
+        <span class="col-title">Now Playing</span>
+        <button id="spotify-auth-btn">Connect</button>
+      </div>
+      <div id="spotify-body">
+        <div id="spotify-art-wrap">
+          <img id="spotify-art" crossorigin="anonymous" src="" alt="" />
+          <div id="spotify-art-placeholder">♪</div>
+        </div>
+        <div id="spotify-meta">
+          <div class="marquee-wrap">
+            <span id="spotify-track-text">Not connected</span>
+          </div>
+          <div id="spotify-artist">—</div>
+        </div>
+        <div id="spotify-progress-wrap">
+          <span id="spotify-elapsed">0:00</span>
+          <div id="spotify-progress-bar"><div id="spotify-progress-fill"></div></div>
+          <span id="spotify-duration">0:00</span>
+        </div>
+        <div id="spotify-controls">
+          <button class="ctrl-btn" id="btn-shuffle" title="Shuffle">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm0.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+          </button>
+          <button class="ctrl-btn" id="btn-prev">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+          </button>
+          <button class="ctrl-btn" id="btn-playpause">
+            <svg id="icon-play"  viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+          </button>
+          <button class="ctrl-btn" id="btn-next">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2-8.14 5.5 3.89L8 18.14V9.86zM16 6h2v12h-2z"/></svg>
+          </button>
+          <button class="ctrl-btn" id="btn-like" title="Like / Unlike" disabled>
+            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget" data-widget="spotify" data-name="Spotify" id="col-music">
+      <div id="music-head">
+        <button id="search-open" title="Search Spotify">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+          <span>What do you want to play?</span>
+        </button>
+        <button class="icon-btn" id="library-refresh" title="Refresh">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
+        </button>
+      </div>
+      <div class="section-title pad">Jump back in</div>
+      <div id="library-grid"></div>
+
+    </div>
+
+    <div class="widget" data-widget="games" data-name="Games">
+      <div class="block">
+        <div class="section-head">
+          <span class="section-title">Recently played</span>
+          <button class="icon-btn" id="games-refresh" title="Refresh">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
+          </button>
+        </div>
+        <div class="hscroll" id="games-row"></div>
+      </div>
+
+    </div>
+
+    <div class="widget" data-widget="clock" data-name="Clock &amp; Stats">
+      <div id="sys-top">
+        <div id="clock-wrap">
+          <div id="sys-time">00:00</div>
+          <div id="sys-date">—</div>
+        </div>
+        <div id="sys-stats">
+          <div class="stat" title="CPU usage">
+            <div class="stat-row"><span class="stat-name">CPU</span><span class="stat-pct" id="cpu-pct">—</span></div>
+            <div class="stat-bar"><div class="stat-fill" id="cpu-fill"></div></div>
+          </div>
+          <div class="stat" title="Memory in use">
+            <div class="stat-row"><span class="stat-name">RAM</span><span class="stat-pct" id="ram-pct">—</span></div>
+            <div class="stat-bar"><div class="stat-fill" id="ram-fill"></div></div>
+          </div>
+          <div class="stat" id="gpu-wrap" title="GPU usage">
+            <div class="stat-row"><span class="stat-name">GPU</span><span class="stat-pct" id="gpu-pct">—</span></div>
+            <div class="stat-bar"><div class="stat-fill" id="gpu-fill"></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="widget" data-widget="apps" data-name="Apps">
+      <div id="apps-row"></div>
+    </div>
+
+    <div class="widget" data-widget="discord" data-name="Discord">
+      <div id="discord-panel">
+        <div id="discord-header">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style="flex-shrink:0"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.013.043.031.056a19.9 19.9 0 0 0 5.993 3.03.077.077 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+          <div id="discord-info">
+            <span id="discord-channel-name">Discord</span>
+            <span id="discord-idle">Not in a voice channel</span>
+          </div>
+          <div id="discord-actions" class="hidden">
+            <button class="discord-btn" id="btn-mute" title="Mute">
+              <svg class="on"  viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
+              <svg class="off" viewBox="0 0 24 24" fill="currentColor"><path d="M19 11h-2c0 .74-.16 1.43-.43 2.05l1.47 1.47A6.96 6.96 0 0 0 19 11zm-4.02.17L9 5.18V5a3 3 0 0 1 6 0v6c0 .06-.01.11-.02.17zM4.27 3 3 4.27l6 6V11a3 3 0 0 0 4.22 2.73l1.66 1.66A4.98 4.98 0 0 1 7 11H5a7 7 0 0 0 6 6.92V21h2v-3.08a6.9 6.9 0 0 0 2.85-1.01L19.73 21 21 19.73 4.27 3z"/></svg>
+            </button>
+            <button class="discord-btn" id="btn-deaf" title="Deafen">
+              <svg class="on"  viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 0 0-9 9v7a2 2 0 0 0 2 2h3v-8H5v-1a7 7 0 0 1 14 0v1h-3v8h3a2 2 0 0 0 2-2v-7a9 9 0 0 0-9-9z"/></svg>
+              <svg class="off" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 0 0-7.5 4l1.45 1.45A7 7 0 0 1 19 12v1h-3v3.17l3.6 3.6c.25-.3.4-.69.4-1.1V12a9 9 0 0 0-9-9zM3.27 2 2 3.27l2.33 2.33A8.94 8.94 0 0 0 3 12v7a2 2 0 0 0 2 2h3v-8H5v-1c0-1.13.27-2.2.75-3.15L19.73 22 21 20.73 3.27 2z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="discord-users" class="hidden"></div>
+      </div>
+
+    </div>
+
+      <div id="search-panel" class="hidden">
+        <div id="search-bar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+          <input id="search-input" type="text" placeholder="What do you want to play?" autocomplete="off" spellcheck="false" />
+          <button id="search-clear" title="Clear">⌫</button>
+          <button id="search-close" title="Close">✕</button>
+        </div>
+        <div id="search-results"><div class="section-empty">Type to search songs, artists, albums and playlists.</div></div>
+      </div>
+
+    <div class="widget" data-widget="volume" data-name="Volume">
+      <div class="section-head"><span class="section-title">Volume</span></div>
+      <div id="volume-list"></div>
+    </div>
+
+  </div>
+
+  <!-- ── Settings ───────────────────────────────────────────────────────── -->
+  <div id="settings" class="hidden"></div>
+
+  <canvas id="color-canvas" style="display:none" width="40" height="40"></canvas>
+  <script src="renderer.js"></script>
+  <script src="settings-ui.js"></script>
+</body>
+</html>
